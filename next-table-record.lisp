@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-02-28 10:33:17 next-table-record.lisp>
+;; Time-stamp: <2011-03-06 17:46:57 next-table-record.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -58,6 +58,11 @@ See the comments in the code for the cleanup steps.
 "
   `(multiple-value-bind (fields count)
        (csv-parser:read-csv-line stream)
+     (when (and (null fields)
+		(zerop count))
+       (if eof-error-p
+	   (error "Reached the end of file")
+	   (return-from next-table-record (values eof-value 0))))
      ;; Signal error if insufficient length and eor-error-p/
      (when (and length
 		eor-error-p
@@ -90,7 +95,8 @@ See the comments in the code for the cleanup steps.
 		       (if length length count)))))))
 
 (defgeneric next-table-record (stream key row &key type length
-				    eor-error-p missing-field-value)
+				      eof-error-p eof-value
+				      eor-error-p missing-field-value)
   (:documentation
    "Read next record from csv-file bound to `stream' and return the
 record contents as a list that satisfies the following:
@@ -98,6 +104,8 @@ record contents as a list that satisfies the following:
  - missing values and empty fields are filled according to
    `missing-field-value'
  - All fields are processed using the `key' and `type' keywords.
+
+If the line is empty, return error if `eof-error-p' is t or `eof-value'
 
 The function returns a list and its length.
 
@@ -145,11 +153,14 @@ read using `read-from-string'.  It should not return an empty string.
 
 The parameter `type' can be used to convert the value returned by `read-from-string'.  Its default value is `t' - no conversion.")
   (:method ((stream stream) (key (eql t)) row &key type length
+	    (eof-error-p t) eof-value
 	    (eor-error-p t) (missing-field-value nil))
     (declare (ignore type))
     (read&process-next-record))
   (:method ((stream stream) (key (eql :read-from-string)) row
-	    &key type length (eor-error-p t) (missing-field-value "nil"))
+	    &key type length
+	    (eof-error-p t) eof-value
+	    (eor-error-p t) (missing-field-value "nil"))
     (read&process-next-record
      (mapcar #'(lambda (string)
 		 (coerce (read-from-string string)
@@ -157,6 +168,7 @@ The parameter `type' can be used to convert the value returned by `read-from-str
 	     fields%%)))
   (:method ((stream stream) (key function) row
 	    &key type length
+	    (eof-error-p t) eof-value
 	    (eor-error-p t) missing-field-value)
     (declare (ignore type))
     (read&process-next-record
@@ -171,6 +183,12 @@ The parameter `type' can be used to convert the value returned by `read-from-str
       (assert-equal
        '("1" "2" "3") values)
       (assert-numerical-equal 3 count)))
+  (with-input-from-string (stream "")
+    (multiple-value-bind (values count)
+	(next-table-record stream t 0 :eof-error-p nil :eof-value :eof)
+      (assert-equal
+       :eof values)
+      (assert-numerical-equal 0 count)))
   (with-input-from-string (stream "1, 2, 3")
     (multiple-value-bind (values count)
 	(next-table-record stream :read-from-string 0 :type 'double-float)

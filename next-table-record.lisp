@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-03-06 17:46:57 next-table-record.lisp>
+;; Time-stamp: <2011-08-22 21:45:06 next-table-record.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -30,7 +30,7 @@
 ;; gsd's grid):
 ;;
 ;; - Convert empty field values (NIL) into some other field
-;; - Convert the feilds (strings) into some other format
+;; - Convert the fields (strings) into some other format
 ;;
 ;; See the routine documentation and unit tests for further info.
 

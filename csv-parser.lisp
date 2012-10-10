@@ -59,18 +59,13 @@
 ;;;;
 ;;
 
-(in-package :common-lisp-user)
-
-(defpackage :csv-parser
-  (:use :common-lisp)
-  (:export  #:*field-separator*
-	    #:*quote-character*
-	    #:read-csv-line
-	    #:do-csv-file
-	    #:map-csv-file
-	    #:write-csv-line))
-
 (in-package :csv-parser)
+
+(export '(*field-separator* *quote-character*
+	  read-csv-line
+	  do-csv-file
+	  map-csv-file
+	  write-csv-line))
 
 (defparameter *field-separator* #\,
   "The character used to indicate the end of a field

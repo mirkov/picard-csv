@@ -1,0 +1,6 @@
+2011-03-06    <977315@WTEHDZYYN71>
+
+	* next-table-record.lisp (next-table-record): Added keywords
+	`eof-error-p' and `eof-value' to handle the end of file (or empty
+	lines)
+
